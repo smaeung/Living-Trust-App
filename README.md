@@ -61,6 +61,15 @@ Open the Living Trust App on your device or web. Tap **"Create Trust"** on the h
 | Review | AI document analysis |
 | Settings | App preferences |
 
+### Mobile View (375px)
+![Home Screen](./screenshots/home-mobile.png)
+
+### Desktop View (1280px)
+![Home Screen](./screenshots/home-desktop.png)
+
+### Trust Wizard (Mobile)
+![Trust Wizard](./screenshots/trust-wizard-mobile.png)
+
 ---
 
 ## 🖥️ Web App Preview
