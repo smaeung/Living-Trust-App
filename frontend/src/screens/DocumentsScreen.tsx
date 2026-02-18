@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, Alert, TextInput, Modal } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 
@@ -37,6 +37,8 @@ const sampleDocuments: Document[] = [
 
 export default function DocumentsScreen({ navigation }: DocumentsScreenProps) {
   const [documents, setDocuments] = useState(sampleDocuments);
+  const [linkModalVisible, setLinkModalVisible] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,6 +79,37 @@ export default function DocumentsScreen({ navigation }: DocumentsScreenProps) {
         },
       ]
     );
+  };
+
+  const handleUpload = () => {
+    // Simulate file upload
+    const newDoc: Document = {
+      id: Date.now().toString(),
+      name: `Uploaded Document ${Date.now()}`,
+      type: 'other',
+      date: new Date().toISOString().split('T')[0],
+      status: 'draft',
+      size: Math.floor(Math.random() * 500 + 100) + ' KB',
+    };
+    setDocuments([newDoc, ...documents]);
+    Alert.alert('✅ Success', 'Document uploaded successfully!');
+  };
+
+  const handleLink = (url: string) => {
+    if (!url.trim()) {
+      Alert.alert('⚠️ Error', 'Please enter a valid URL or ID');
+      return;
+    }
+    const newDoc: Document = {
+      id: Date.now().toString(),
+      name: `Linked Document`,
+      type: 'other',
+      date: new Date().toISOString().split('T')[0],
+      status: 'draft',
+      size: '0 KB',
+    };
+    setDocuments([newDoc, ...documents]);
+    Alert.alert('✅ Success', 'Document linked successfully!');
   };
 
   const renderDocument = ({ item }: { item: Document }) => (
@@ -153,19 +186,84 @@ export default function DocumentsScreen({ navigation }: DocumentsScreenProps) {
 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.quickActionButton}>
+        <TouchableOpacity 
+          style={styles.quickActionButton}
+          onPress={() => navigation.navigate('TrustWizard')}
+        >
           <Text style={styles.quickActionIcon}>➕</Text>
           <Text style={styles.quickActionText}>New Document</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.quickActionButton}>
+        <TouchableOpacity 
+          style={styles.quickActionButton}
+          onPress={() => {
+            Alert.alert(
+              '📤 Upload Document',
+              'Choose how to upload:',
+              [
+                { text: '📁 Browse Files', onPress: () => handleUpload() },
+                { text: '📷 Take Photo', onPress: () => Alert.alert('Camera', 'Camera upload coming soon!') },
+                { text: 'Cancel', style: 'cancel' }
+              ]
+            );
+          }}
+        >
           <Text style={styles.quickActionIcon}>📤</Text>
           <Text style={styles.quickActionText}>Upload</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.quickActionButton}>
+        <TouchableOpacity 
+          style={styles.quickActionButton}
+          onPress={() => setLinkModalVisible(true)}
+        >
           <Text style={styles.quickActionIcon}>🔗</Text>
           <Text style={styles.quickActionText}>Link</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Link Modal */}
+      <Modal
+        visible={linkModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLinkModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>🔗 Link External Document</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter URL or Document ID"
+              placeholderTextColor="#a0aec0"
+              value={linkUrl}
+              onChangeText={setLinkUrl}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => {
+                  setLinkUrl('');
+                  setLinkModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalButtonConfirm]}
+                onPress={() => {
+                  if (linkUrl.trim()) {
+                    handleLink(linkUrl);
+                    setLinkUrl('');
+                    setLinkModalVisible(false);
+                  } else {
+                    Alert.alert('⚠️ Error', 'Please enter a valid URL or ID');
+                  }
+                }}
+              >
+                <Text style={styles.modalButtonText}>Link</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Storage Info */}
       <View style={styles.storageSection}>
@@ -380,5 +478,56 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#718096',
     marginTop: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a365d',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+    color: '#1a365d',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  modalButtonCancel: {
+    backgroundColor: '#e2e8f0',
+  },
+  modalButtonConfirm: {
+    backgroundColor: '#4299e1',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
