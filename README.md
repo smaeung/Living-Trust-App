@@ -1,6 +1,6 @@
 # Living Trust App
 
-AI-powered mobile app to help people build, overview, and review Living Trusts with an AI lawyer assistant.
+AI-powered mobile app to help people create, overview, and review Living Trust documents with an AI lawyer assistant.
 
 ## 🎯 Purpose
 
@@ -14,7 +14,75 @@ The **Living Trust App** helps users:
 
 - **iOS:** React Native (iOS build ready)
 - **Android:** React Native (Android build ready)
+- **Web:** Progressive Web App (mobile & desktop)
 - **Backend:** Node.js Microservices API
+
+## 📸 How to Generate a Trust Document
+
+Follow these steps to create your Living Trust:
+
+### Step 1: Launch the App
+Open the Living Trust App on your device or web. Tap **"Create Trust"** on the home screen.
+
+### Step 2: Fill in Basic Information
+- Enter Trust Name (required)
+- Select Trust Type: Revocable or Irrevocable
+- Tap **"Next"** to continue
+
+### Step 3: Add Grantor Details
+- Enter your full legal name
+- Add your address
+- Tap **"Next"**
+
+### Step 4: Add Beneficiaries
+- List your beneficiaries (who inherits)
+- Specify their relationship
+- Tap **"Next"**
+
+### Step 5: Select Successor Trustee
+- Choose who manages the trust after you
+- Tap **"Next"**
+
+### Step 6: Review & Create
+- Review all information
+- Tap **"Create Now"** button
+- See success confirmation popup
+
+---
+
+## 📷 App Screenshots
+
+| Screen | Description |
+|--------|-------------|
+| Home | Main dashboard with quick actions |
+| Create Trust | 5-step wizard form |
+| AI Assistant | Chat with AI lawyer |
+| Documents | View saved trusts |
+| Review | AI document analysis |
+| Settings | App preferences |
+
+### Mobile View (375px)
+![Home Screen](./screenshots/home-mobile.png)
+
+### Desktop View (1280px)
+![Home Screen](./screenshots/home-desktop.png)
+
+### Trust Wizard (Mobile)
+![Trust Wizard](./screenshots/trust-wizard-mobile.png)
+
+---
+
+## 🖥️ Web App Preview
+
+The app is fully responsive and works on:
+
+| Device | Viewport |
+|--------|----------|
+| Mobile | 375px |
+| Tablet | 768px |
+| Desktop | 1280px+ |
+
+---
 
 ## 🛠 Tech Stack
 
@@ -80,6 +148,13 @@ npm install
 npm run dev
 ```
 
+### Web Build
+```bash
+cd frontend
+npx expo export --platform web
+# Serve with: npx serve dist
+```
+
 ## 🔧 Environment Variables
 
 ### Backend (.env)
@@ -96,7 +171,7 @@ MIT
 
 ## 👤 Author
 
-- Sungho Maeung
+- Your Name
 
 ---
 
