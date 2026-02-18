@@ -96,7 +96,7 @@ MIT
 
 ## 👤 Author
 
-- Sungho Maeung
+- Your Name
 
 ---
 
