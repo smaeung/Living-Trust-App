@@ -5,11 +5,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 
 // Routes
-import authRoutes from './src/routes/authRoutes';
-import trustRoutes from './src/routes/trustRoutes';
-import documentRoutes from './src/routes/documentRoutes';
-import aiRoutes from './src/routes/aiRoutes';
-import userRoutes from './src/routes/userRoutes';
+import authRoutes from './routes/authRoutes';
+import trustRoutes from './routes/trustRoutes';
+import documentRoutes from './routes/documentRoutes';
+import aiRoutes from './routes/aiRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
