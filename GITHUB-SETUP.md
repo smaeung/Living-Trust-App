@@ -1,52 +1,39 @@
-# Living Trust App - GitHub Setup Script
+# Living Trust App - GitHub Setup
 
-## Quick Setup (Run in PowerShell as Administrator)
+## Quick Setup
 
 ```powershell
 # 1. Install GitHub CLI
 winget install GitHub.cli
 
-# 2. Restart terminal, then authenticate
+# 2. Authenticate
 gh auth login
 
-# 3. Create repo and push (run from project folder)
-cd "C:\Users\smaeu\.openclaw\workspace\Projects\Living-Trust-App"
-
-# Create repo on GitHub
-gh repo create Living-Trust-App --public --source=. --push
+# 3. Clone and setup
+git clone https://github.com/smaeung/Living-Trust-App.git
+cd Living-Trust-App
 
 # 4. Create feature branch
-git checkout -b feature/initial-setup
-git push -u origin feature/initial-setup
+git checkout -b feature/your-feature
 
-# 5. Create PR
-gh pr create --title "Initial Living Trust App Setup" --body "Full mobile app with React Native + Node.js backend"
+# 5. Push and create PR
+git add .
+git commit -m "Your changes"
+git push -u origin feature/your-feature
 
-# 6. View PR
-gh pr view --web
+# 6. Create PR
+gh pr create --title "Your Feature" --body "Description"
 ```
 
 ## Current Status
 
-✅ **Local Git:** Ready (2 commits)
-- `8bf4983` - Initial commit
-- `72ff103` - Fix: Correct import paths
-- `f96f9fe` - Fix: TypeScript paths, navigation types
+| Branch | Status | Description |
+|--------|--------|-------------|
+| `master` | ✅ Pushed | Initial structure |
+| `feature/v1.0.0-complete` | ✅ Pushed | Full app code |
 
-⏳ **GitHub:** Need to install `gh` CLI
+## After Merging
 
----
-
-## What Will Be Pushed
-
-| Branch | Description |
-|--------|-------------|
-| `main` | Initial project structure |
-| `feature/initial-setup` | Full app code |
-
-## After PR Approval
-
-Merge in GitHub, then pull:
 ```bash
 git checkout main
 git pull origin main
