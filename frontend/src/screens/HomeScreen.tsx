@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../../App';
 
 type HomeScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -30,7 +30,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       
       <TouchableOpacity 
         style={styles.actionCard}
-        onPress={() => navigation.navigate('TrustWizard')}
+        onPress={() => navigation.navigate('TrustWizard' as any)}
       >
         <Text style={styles.actionIcon}>📝</Text>
         <View style={styles.actionContent}>
@@ -42,7 +42,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       <TouchableOpacity 
         style={styles.actionCard}
-        onPress={() => navigation.navigate('Review')}
+        onPress={() => navigation.navigate('Review' as any)}
       >
         <Text style={styles.actionIcon}>🔍</Text>
         <View style={styles.actionContent}>
@@ -54,7 +54,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       <TouchableOpacity 
         style={styles.actionCard}
-        onPress={() => navigation.navigate('AiAssistant')}
+        onPress={() => navigation.navigate('AiAssistant' as any)}
       >
         <Text style={styles.actionIcon}>⚖️</Text>
         <View style={styles.actionContent}>
@@ -66,7 +66,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       <TouchableOpacity 
         style={styles.actionCard}
-        onPress={() => navigation.navigate('Documents')}
+        onPress={() => navigation.navigate('Documents' as any)}
       >
         <Text style={styles.actionIcon}>📁</Text>
         <View style={styles.actionContent}>
@@ -88,7 +88,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* Footer */}
       <TouchableOpacity 
         style={styles.settingsButton}
-        onPress={() => navigation.navigate('Settings')}
+        onPress={() => navigation.navigate('Settings' as any)}
       >
         <Text style={styles.settingsText}>⚙️ Settings</Text>
       </TouchableOpacity>
