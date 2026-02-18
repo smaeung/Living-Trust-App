@@ -15,7 +15,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
+      '🚪 Logout',
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
@@ -33,10 +33,85 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
         { 
           text: 'Delete', 
           style: 'destructive',
-          onPress: () => Alert.alert('Account Deleted', 'Your account has been deleted.')
+          onPress: () => Alert.alert('✅ Done', 'Your account has been deleted.')
         },
       ]
     );
+  };
+
+  const handleEditProfile = () => {
+    Alert.alert('✏️ Edit Profile', 'Opening profile editor...\n\nFeatures coming soon:\n• Change name\n• Update email\n• Update phone number');
+  };
+
+  const handleChangePassword = () => {
+    Alert.alert('🔐 Change Password', 'Password change form coming soon!');
+  };
+
+  const handle2FA = () => {
+    Alert.alert('📱 Two-Factor Authentication', '2FA setup coming soon!\n\nOptions:\n• SMS verification\n• Authenticator app\n• Email code');
+  };
+
+  const handleLanguage = () => {
+    Alert.alert(
+      '🌐 Select Language',
+      'Choose your preferred language:',
+      [
+        { text: 'English ✓', onPress: () => {} },
+        { text: 'Spanish', onPress: () => {} },
+        { text: 'French', onPress: () => {} },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const handleClearCache = () => {
+    Alert.alert(
+      '💾 Clear Cache',
+      'This will remove temporary files. Your data will not be affected.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Clear', 
+          onPress: () => Alert.alert('✅ Done', 'Cache cleared successfully!')
+        },
+      ]
+    );
+  };
+
+  const handleTerms = () => {
+    Alert.alert('📜 Terms of Service', 'By using this app, you agree to our Terms of Service.\n\n© 2026 Living Trust App');
+  };
+
+  const handlePrivacy = () => {
+    Alert.alert('🔒 Privacy Policy', 'Your data is protected.\n\n• We never share your information\n• Documents are encrypted\n• Secure authentication');
+  };
+
+  const handleDisclaimer = () => {
+    Alert.alert('📋 Disclaimer', '⚠️ IMPORTANT\n\nThis app provides general information about Living Trusts. It is NOT legal advice.\n\nPlease consult with a licensed attorney for legal guidance specific to your situation.');
+  };
+
+  const handleRateApp = () => {
+    Alert.alert('⭐ Rate the App', 'Thank you for your support!\n\nPlease rate us on the app store.');
+  };
+
+  const handleFeedback = () => {
+    Alert.alert('💬 Send Feedback', 'We\'d love to hear from you!\n\nEmail: support@livingtrustapp.com');
+  };
+
+  const handleNotificationToggle = (value: boolean, setting: string) => {
+    if (setting === 'notifications') {
+      setNotifications(value);
+      Alert.alert(value ? '🔔 Enabled' : '🔕 Disabled', `${setting} ${value ? 'enabled' : 'disabled'}`);
+    } else if (setting === 'email') {
+      setEmailUpdates(value);
+      Alert.alert(value ? '📧 Enabled' : '📧 Disabled', `Email updates ${value ? 'enabled' : 'disabled'}`);
+    } else if (setting === 'biometric') {
+      setBiometricLogin(value);
+      Alert.alert(value ? '👆 Enabled' : '👆 Disabled', `Biometric login ${value ? 'enabled' : 'disabled'}`);
+    } else if (setting === 'darkMode') {
+      setDarkMode(value);
+      Alert.alert(value ? '🌙 Dark Mode' : '☀️ Light Mode', `Theme changed to ${value ? 'dark' : 'light'} mode`);
+    }
   };
 
   return (
@@ -50,7 +125,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>👤 Profile</Text>
         
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleEditProfile}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>✏️</Text>
             <View>
@@ -61,7 +136,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleChangePassword}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>🔐</Text>
             <View>
@@ -87,7 +162,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           </View>
           <Switch
             value={notifications}
-            onValueChange={setNotifications}
+            onValueChange={(value) => handleNotificationToggle(value, 'notifications')}
             trackColor={{ false: '#e2e8f0', true: '#48bb78' }}
             thumbColor="#fff"
           />
@@ -103,7 +178,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           </View>
           <Switch
             value={emailUpdates}
-            onValueChange={setEmailUpdates}
+            onValueChange={(value) => handleNotificationToggle(value, 'email')}
             trackColor={{ false: '#e2e8f0', true: '#48bb78' }}
             thumbColor="#fff"
           />
@@ -124,13 +199,13 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           </View>
           <Switch
             value={biometricLogin}
-            onValueChange={setBiometricLogin}
+            onValueChange={(value) => handleNotificationToggle(value, 'biometric')}
             trackColor={{ false: '#e2e8f0', true: '#48bb78' }}
             thumbColor="#fff"
           />
         </View>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handle2FA}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>📱</Text>
             <View>
@@ -156,13 +231,13 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           </View>
           <Switch
             value={darkMode}
-            onValueChange={setDarkMode}
+            onValueChange={(value) => handleNotificationToggle(value, 'darkMode')}
             trackColor={{ false: '#e2e8f0', true: '#48bb78' }}
             thumbColor="#fff"
           />
         </View>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleLanguage}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>🌐</Text>
             <View>
@@ -173,7 +248,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleClearCache}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>💾</Text>
             <View>
@@ -189,7 +264,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>📄 Legal</Text>
         
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleTerms}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>📜</Text>
             <Text style={styles.settingLabel}>Terms of Service</Text>
@@ -197,7 +272,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handlePrivacy}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>🔒</Text>
             <Text style={styles.settingLabel}>Privacy Policy</Text>
@@ -205,7 +280,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleDisclaimer}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>📋</Text>
             <Text style={styles.settingLabel}>Disclaimer</Text>
@@ -218,7 +293,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>ℹ️ About</Text>
         
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleRateApp}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>⭐</Text>
             <Text style={styles.settingLabel}>Rate the App</Text>
@@ -226,7 +301,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={handleFeedback}>
           <View style={styles.settingContent}>
             <Text style={styles.settingIcon}>💬</Text>
             <Text style={styles.settingLabel}>Send Feedback</Text>
