@@ -68,14 +68,45 @@ export default function DocumentsScreen({ navigation }: DocumentsScreenProps) {
 
   const handleDelete = (id: string) => {
     Alert.alert(
-      'Delete Document',
-      'Are you sure you want to delete this document?',
+      '🗑️ Delete Document',
+      'Are you sure you want to delete this document? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Delete', 
           style: 'destructive',
-          onPress: () => setDocuments(documents.filter(d => d.id !== id))
+          onPress: () => {
+            setDocuments(documents.filter(d => d.id !== id));
+            Alert.alert('✅ Deleted', 'Document has been removed.');
+          }
+        },
+      ]
+    );
+  };
+
+  const handleView = (doc: Document) => {
+    Alert.alert(
+      `📄 ${doc.name}`,
+      `Type: ${doc.type}\nDate: ${doc.date}\nStatus: ${doc.status}\nSize: ${doc.size}`,
+      [
+        { text: 'Close', style: 'cancel' },
+        { text: 'Edit', onPress: () => Alert.alert('✏️ Edit', 'Edit functionality coming soon!') },
+      ]
+    );
+  };
+
+  const handleDownload = (doc: Document) => {
+    Alert.alert(
+      '⬇️ Download Document',
+      `Download "${doc.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Download', 
+          onPress: () => {
+            // Simulate download
+            Alert.alert('✅ Success', `"${doc.name}" downloaded successfully!`);
+          }
         },
       ]
     );
@@ -130,10 +161,10 @@ export default function DocumentsScreen({ navigation }: DocumentsScreenProps) {
         </View>
       </View>
       <View style={styles.docActions}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => Alert.alert('View', 'Opening document...')}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => handleView(item)}>
           <Text style={styles.actionIcon}>👁️</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => Alert.alert('Download', 'Downloading...')}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => handleDownload(item)}>
           <Text style={styles.actionIcon}>⬇️</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => handleDelete(item.id)}>
