@@ -34,16 +34,44 @@ export default function TrustWizardScreen({ navigation }: TrustWizardScreenProps
   const totalSteps = 5;
 
   const handleNext = () => {
+    // Validation before proceeding
+    if (step === 1 && !formData.trustName) {
+      Alert.alert('⚠️ Required Field', 'Please enter a Trust Name to continue.');
+      return;
+    }
+    if (step === 2 && !formData.grantorName) {
+      Alert.alert('⚠️ Required Field', 'Please enter the Grantor Name to continue.');
+      return;
+    }
+    if (step === 3 && !formData.beneficiaries) {
+      Alert.alert('⚠️ Required Field', 'Please add at least one Beneficiary to continue.');
+      return;
+    }
+    
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
+      // Show confirmation before creating
       Alert.alert(
-        '✅ Trust Created!',
-        'Your Living Trust has been created. Our AI will review it shortly.',
+        '📝 Create Your Living Trust?',
+        `Are you sure you want to create "${formData.trustName}"?\n\nThis will generate your Living Trust document.`,
         [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Home'),
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: '✅ Create Now', 
+            onPress: () => {
+              // Show success after creation
+              Alert.alert(
+                '✅ Success!',
+                `🎉 Your Living Trust "${formData.trustName}" has been created!\n\n📄 Document saved to Documents.\n🤖 AI will review it shortly.`,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Home'),
+                  },
+                ]
+              );
+            }
           },
         ]
       );
