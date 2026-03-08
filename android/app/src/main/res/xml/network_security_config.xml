@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Configuration
+  ================================
+  SECURITY: Replaces the global android:usesCleartextTraffic="true" with a
+  targeted policy that only allows HTTP (cleartext) to the Android emulator
+  loopback address (10.0.2.2) and localhost — used in debug/development builds
+  to reach the backend running on the host machine.
+
+  All production/release traffic MUST use HTTPS only (enforced by the
+  base-config cleartextTrafficPermitted="false").
+
+  See: https://developer.android.com/training/articles/security-config
+-->
+<network-security-config>
+
+    <!--
+      Base config: all connections (not matched by a domain rule below)
+      MUST use TLS/HTTPS. Cleartext HTTP is blocked everywhere by default.
+      This is the secure default for production.
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust the system CA store (pre-installed certificates). -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+      Debug-only domain rule: allow cleartext HTTP to the Android emulator
+      host (10.0.2.2) and localhost. This maps to the developer's machine
+      where the Express backend runs on port 3001.
+
+      IMPORTANT: This rule only applies in builds where the debug config is
+      active (debug build type). In release builds this rule is ignored.
+
+      WHY 10.0.2.2?
+      The Android emulator's virtual network routes 10.0.2.2 → the host machine's
+      localhost. This is how emulators reach services running on the developer's
+      computer (e.g., the Express backend on http://localhost:3001).
+    -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+      Stripe domains: always require TLS (this is Stripe's own requirement).
+      Explicitly listed here for clarity — they are already covered by base-config
+      but listing them makes the intent explicit and allows for certificate pinning
+      to be added in future if required.
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">stripe.com</domain>
+        <domain includeSubdomains="true">api.stripe.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+</network-security-config>

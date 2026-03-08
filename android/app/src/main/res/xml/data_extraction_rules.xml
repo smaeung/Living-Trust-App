@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Data Extraction Rules (Android 12+ / API 31+)
+  ================================================
+  Controls what app data is included in Android Backup and cloud sync.
+
+  SECURITY POLICY: All sensitive data is excluded from backup.
+
+  WHY exclude sensitive data from backup?
+  - Android Backup transfers app data to Google Drive or ADB backups.
+  - If a backup is restored to another device or accessed via "adb backup",
+    it could expose JWT tokens, trust documents, and payment session data.
+  - The JWT token (stored in DataStore "living_trust_prefs") MUST be excluded
+    because restoring an old token to a new device would give that device
+    access to the original user's account without re-authentication.
+
+  WHY shared_prefs and database are excluded?
+  - DataStore Preferences files are stored as shared_prefs on disk.
+  - Room databases may cache trust document content locally.
+
+  Reference: https://developer.android.com/guide/topics/data/autobackup
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Exclude the DataStore JWT token from cloud backup -->
+        <exclude domain="sharedpref" path="living_trust_prefs.preferences_pb" />
+        <!-- Exclude the Room database (may contain cached trust data) -->
+        <exclude domain="database" path="living_trust_db" />
+        <!-- Exclude any cached PDF files -->
+        <exclude domain="cache" />
+        <!-- Exclude all external files (downloaded PDFs) -->
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <!-- Same exclusions for device-to-device transfer (e.g., phone upgrade) -->
+        <exclude domain="sharedpref" path="living_trust_prefs.preferences_pb" />
+        <exclude domain="database" path="living_trust_db" />
+        <exclude domain="cache" />
+    </device-transfer>
+</data-extraction-rules>
