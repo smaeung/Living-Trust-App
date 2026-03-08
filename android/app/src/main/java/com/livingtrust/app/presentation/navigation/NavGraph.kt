@@ -1,15 +1,19 @@
 package com.livingtrust.app.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.livingtrust.app.domain.model.Trust
 import com.livingtrust.app.presentation.ai.AiAssistantScreen
 import com.livingtrust.app.presentation.auth.LoginScreen
 import com.livingtrust.app.presentation.auth.RegisterScreen
 import com.livingtrust.app.presentation.documents.DocumentsScreen
 import com.livingtrust.app.presentation.home.HomeScreen
+import com.livingtrust.app.presentation.payment.PaymentScreen
+import com.livingtrust.app.presentation.pdf.PdfPreviewScreen
 import com.livingtrust.app.presentation.settings.SettingsScreen
 import com.livingtrust.app.presentation.trust.TrustWizardScreen
 
@@ -37,6 +41,24 @@ object Routes {
     const val AI_ASSISTANT = "ai_assistant"
     const val DOCUMENTS = "documents"
     const val SETTINGS = "settings"
+    const val PDF_PREVIEW = "pdf_preview"
+    const val PAYMENT = "payment"
+}
+
+/**
+ * In-memory navigation data store for passing complex objects between screens.
+ *
+ * WHY not use NavBackStackEntry arguments?
+ * - Compose Navigation passes arguments as strings in the URL route.
+ * - A Trust object with multiple fields would need to be serialized/deserialized on every navigation.
+ * - For in-process navigation (no process death between screens), a simple singleton store is simpler.
+ * - In production, use Hilt's @ActivityRetainedScoped ViewModel or Jetpack Navigation's SavedState.
+ */
+object NavDataStore {
+    var pendingTrust: Trust? = null
+    var pendingStateCode: String = "WA"
+    var pendingAmount: Int = 2999
+    var pendingDisplayPrice: String = "\$29.99"
 }
 
 /**
@@ -131,11 +153,55 @@ fun NavGraph(
 
         composable(Routes.TRUST_WIZARD) {
             TrustWizardScreen(
-                // Both "back" and "trust created" navigate to the same destination (back stack pop),
-                // but they represent different events — keeping them separate is more explicit.
                 onNavigateBack = { navController.popBackStack() },
-                onTrustCreated = { navController.popBackStack() }
+                onTrustCreated = { trust ->
+                    // Store trust for PDF preview screen
+                    NavDataStore.pendingTrust = trust
+                    navController.navigate(Routes.PDF_PREVIEW)
+                }
             )
+        }
+
+        composable(Routes.PDF_PREVIEW) {
+            val trust = NavDataStore.pendingTrust
+            if (trust != null) {
+                PdfPreviewScreen(
+                    trust = trust,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPayment = { t, stateCode, amount, displayPrice ->
+                        NavDataStore.pendingTrust = t
+                        NavDataStore.pendingStateCode = stateCode
+                        NavDataStore.pendingAmount = amount
+                        NavDataStore.pendingDisplayPrice = displayPrice
+                        navController.navigate(Routes.PAYMENT)
+                    }
+                )
+            } else {
+                // Trust data lost (e.g., process death) — navigate back
+                LaunchedEffect(Unit) { navController.popBackStack() }
+            }
+        }
+
+        composable(Routes.PAYMENT) {
+            val trust = NavDataStore.pendingTrust
+            if (trust != null) {
+                PaymentScreen(
+                    trust = trust,
+                    stateCode = NavDataStore.pendingStateCode,
+                    amount = NavDataStore.pendingAmount,
+                    displayPrice = NavDataStore.pendingDisplayPrice,
+                    onNavigateBack = { navController.popBackStack() },
+                    onPaymentSuccess = {
+                        // Clear pending data and navigate to home
+                        NavDataStore.pendingTrust = null
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.HOME) { inclusive = false }
+                        }
+                    }
+                )
+            } else {
+                LaunchedEffect(Unit) { navController.popBackStack() }
+            }
         }
 
         composable(Routes.AI_ASSISTANT) {

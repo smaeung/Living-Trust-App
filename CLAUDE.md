@@ -6,9 +6,16 @@ This file provides guidance for AI assistants (e.g., Claude Code) working in thi
 
 ## Project Overview
 
-**Living Trust App** is a full-stack, multi-platform application for AI-powered living trust creation and management. It enables users to create, review, and manage legal living trust documents with AI guidance.
+**Living Trust App** is a full-stack, multi-platform application for AI-powered living trust creation and management. It enables users to create, review, and manage legal living trust documents with AI guidance — and purchase an official watermark-free PDF via Stripe payment.
 
 **Platforms:** iOS, Android (React Native via Expo), Web (react-native-web), Native Android (Kotlin/Jetpack Compose)
+
+**Key Features Added (March 2026):**
+- PDF generation with PDFKit — watermarked preview + clean official download
+- Living trust templates for 12 states + generic (WA, CA, TX, FL, NY, IL, GA, PA, OH, NC, AZ, NV)
+- Stripe payment integration — $29.99 per document, 24-hour download token
+- State selector in TrustWizard (WA default, all US states supported)
+- Payment and PDF download flow on both React Native and Android Kotlin
 
 ---
 
@@ -19,13 +26,14 @@ Living-Trust-App/
 ├── frontend/                # React Native (Expo) app — iOS, Android, Web
 │   ├── App.tsx              # Root navigation setup
 │   ├── main.tsx             # Expo entry point (registers App)
-│   ├── src/screens/         # Screen components (6 screens)
+│   ├── src/screens/         # Screen components (8 screens including PdfPreview, Payment)
 │   ├── package.json         # Frontend dependencies
 │   └── tsconfig.json        # TypeScript config (extends expo/tsconfig.base)
 ├── backend/                 # Express.js REST API server
 │   ├── src/
 │   │   ├── index.ts         # Server entry point (port 3001)
-│   │   ├── routes/          # Route handlers (auth, trusts, documents, ai, users)
+│   │   ├── routes/          # Route handlers (auth, trusts, documents, ai, users, pdf, payments)
+│   │   ├── templates/       # Living trust document templates (all 50 states)
 │   │   └── middleware/      # Custom Express middleware
 │   ├── package.json         # Backend dependencies
 │   └── tsconfig.json        # TypeScript config (target: ES2020, CommonJS)
@@ -151,7 +159,12 @@ PORT=3001
 MONGODB_URI=mongodb://localhost:27017/livingtrust
 JWT_SECRET=your-secret-key-here
 OPENAI_API_KEY=sk-...
+STRIPE_SECRET_KEY=sk_test_...        # Stripe secret key (test or live)
+STRIPE_PUBLISHABLE_KEY=pk_test_...  # Stripe publishable key (sent to frontend)
+STRIPE_WEBHOOK_SECRET=whsec_...     # Stripe webhook signing secret
 ```
+
+> **Stripe Test Cards:** Use `4242 4242 4242 4242` with any future date and any CVC for testing.
 
 > **Note:** `.env` files are git-ignored. Never commit secrets to the repository.
 
@@ -184,6 +197,17 @@ The backend exposes a REST API under `/api/`:
 | `POST /api/ai` | Send AI chat message (GPT-4) |
 | `POST /api/ai/analyze` | AI document analysis |
 | `GET/PUT /api/users/:id` | Get / update user |
+| `GET /api/pdf/states` | List all supported US states for templates |
+| `POST /api/pdf/preview` | Generate watermarked PDF (binary response) |
+| `POST /api/pdf/preview-base64` | Generate watermarked PDF (base64 JSON for mobile) |
+| `POST /api/pdf/issue-download-token` | Issue 24-hour download token after payment |
+| `GET /api/pdf/download/:token` | Download clean PDF (no watermark) |
+| `GET /api/pdf/download-base64/:token` | Download clean PDF as base64 (mobile) |
+| `GET /api/payments/config` | Get Stripe publishable key and pricing |
+| `POST /api/payments/create-intent` | Create Stripe PaymentIntent |
+| `POST /api/payments/confirm` | Confirm payment and issue download token |
+| `POST /api/payments/webhook` | Stripe webhook handler |
+| `GET /api/payments/status/:id` | Check payment status |
 
 **Authentication:** JWT Bearer token (7-day expiry). Include in header: `Authorization: Bearer <token>`
 
@@ -198,11 +222,13 @@ The React Native frontend has 6 screens configured in `App.tsx`:
 | Screen | Route Name | Description |
 |---|---|---|
 | HomeScreen | `Home` | Landing page with action cards |
-| TrustWizardScreen | `TrustWizard` | 5-step trust creation wizard |
+| TrustWizardScreen | `TrustWizard` | 5-step trust creation wizard with state selector |
 | ReviewScreen | `Review` | Review trust before finalizing |
 | AiAssistantScreen | `AiAssistant` | Chat interface with GPT-4 |
 | DocumentsScreen | `Documents` | Document upload and management |
 | SettingsScreen | `Settings` | App configuration |
+| PdfPreviewScreen | `PdfPreview` | Watermarked PDF preview + state selection + purchase CTA |
+| PaymentScreen | `Payment` | Stripe payment form → clean PDF download |
 
 Navigation header is dark blue (`#1a365d`), white title/icons.
 
@@ -285,6 +311,73 @@ cd backend && npm run build        # Compile and check for errors (backend)
 
 ---
 
+## Living Trust Templates
+
+Templates live in `backend/src/templates/livingTrustTemplates.ts`.
+
+### Supported States (state-specific legal language)
+| State Code | State | Governing Law |
+|---|---|---|
+| WA | Washington | RCW Chapter 11.98 (Washington Trust Act) — **DEFAULT** |
+| CA | California | California Probate Code §§ 15000–19530 |
+| TX | Texas | Texas Property Code §§ 111.001–116.172 |
+| FL | Florida | Florida Trust Code, F.S. §§ 736.0101–736.1303 |
+| NY | New York | EPTL §§ 7-1.1 et seq. |
+| IL | Illinois | Illinois Trust Code, 760 ILCS 3/ |
+| GA | Georgia | O.C.G.A. §§ 53-12-1 et seq. |
+| PA | Pennsylvania | 20 Pa. C.S. §§ 7701–7799.3 |
+| OH | Ohio | O.R.C. §§ 5801.01–5811.03 |
+| NC | North Carolina | G.S. §§ 36C-1-101 et seq. |
+| AZ | Arizona | A.R.S. §§ 14-10101 et seq. |
+| NV | Nevada | NRS §§ 163.001 et seq. |
+| ALL OTHERS | Generic | Uniform Trust Code |
+
+### Document Structure (all templates)
+Each generated PDF includes: Title Page, Articles I–VI, Execution Page, Notarization Block, Schedule A.
+
+### Adding a New State Template
+1. Add a new `TrustTemplate` implementation in `livingTrustTemplates.ts`
+2. Register it in `STATE_TEMPLATES` with the 2-letter state code
+3. Add it to `ALL_STATES` list for the frontend state selector
+
+---
+
+## PDF Generation & Payment Flow
+
+### User Flow
+```
+TrustWizard (fill form + select state)
+    ↓
+PdfPreviewScreen
+  ├─ Generate Preview → POST /api/pdf/preview-base64 (watermarked PDF)
+  ├─ Select/change state → re-generate
+  └─ Purchase button ($29.99)
+      ↓
+PaymentScreen
+  ├─ POST /api/payments/create-intent → get clientSecret + paymentIntentId
+  ├─ User enters card (Stripe)
+  └─ POST /api/payments/confirm → verify payment → get downloadToken
+      ↓
+Success → GET /api/pdf/download/:token (clean PDF, no watermark, 24hr link)
+```
+
+### PDF Watermark
+- Watermarked preview: diagonal "PREVIEW — NOT FOR LEGAL USE" text across each page (gray, semi-transparent)
+- Clean download: no watermark, professional header/footer, all legal language intact
+
+### Stripe Integration
+- Test mode: set `STRIPE_SECRET_KEY=sk_test_...` in `backend/.env`
+- Development mock: if `STRIPE_SECRET_KEY` is not set, backend returns a mock `pi_mock_*` intent (accepted for testing)
+- Production: set live keys in environment, remove test mode note from UI
+- Android: Stripe Android SDK `com.stripe:stripe-android:21.3.1` added to `build.gradle.kts`
+
+### Download Tokens
+- Generated by `crypto.randomBytes(32)` — 256-bit secure random token
+- 24-hour expiry stored in-memory (replace with Redis/DB in production)
+- Single-use enforcement available (commented out in `pdfRoutes.ts`)
+
+---
+
 ## Known Issues & Tech Debt
 
 | Area | Issue | Priority |
@@ -296,6 +389,10 @@ cd backend && npm run build        # Compile and check for errors (backend)
 | Frontend | `tsconfig.json` Expo base path warning | Low (non-critical) |
 | CI/CD | No automated CI/CD pipeline | Medium |
 | Backend | No unit tests | Medium |
+| PDF | Download tokens stored in-memory (lost on restart) — replace with Redis/DB | Medium |
+| Payment | Card form is custom (not Stripe Elements) — integrate Stripe PaymentSheet for PCI compliance | High |
+| Templates | Only 12 states have dedicated templates; other states use the generic Uniform Trust Code template | Low |
+| Android | Stripe Android SDK added but not fully integrated with PaymentSheet (uses HTTP mock) | Medium |
 
 ---
 
@@ -325,3 +422,12 @@ See `GITHUB-SETUP.md` for detailed instructions.
 | `android/README.md` | Detailed Android architecture documentation |
 | `README.md` | Project setup and overview |
 | `AUDIT.md` | Code quality audit report |
+| `backend/src/templates/livingTrustTemplates.ts` | All state trust templates + template registry |
+| `backend/src/routes/pdfRoutes.ts` | PDF generation (watermarked preview + clean download) |
+| `backend/src/routes/paymentRoutes.ts` | Stripe payment intent, confirm, webhook |
+| `frontend/src/screens/PdfPreviewScreen.tsx` | RN PDF preview screen with state selector |
+| `frontend/src/screens/PaymentScreen.tsx` | RN Stripe payment screen |
+| `android/.../presentation/pdf/PdfPreviewScreen.kt` | Kotlin PDF preview Composable |
+| `android/.../presentation/pdf/PdfPreviewViewModel.kt` | Kotlin PDF preview ViewModel |
+| `android/.../presentation/payment/PaymentScreen.kt` | Kotlin payment Composable |
+| `android/.../presentation/payment/PaymentViewModel.kt` | Kotlin payment ViewModel |

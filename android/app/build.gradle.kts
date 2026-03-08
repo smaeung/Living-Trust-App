@@ -93,6 +93,11 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
+    // Stripe Android SDK — PCI-compliant card capture and payment processing
+    // In production, use PaymentSheet or CardInputWidget from this SDK
+    // instead of the custom card field implementation in PaymentScreen.kt.
+    implementation("com.stripe:stripe-android:21.3.1")
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

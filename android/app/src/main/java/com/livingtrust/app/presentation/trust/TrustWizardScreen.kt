@@ -11,18 +11,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.livingtrust.app.domain.model.Trust
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrustWizardScreen(
     onNavigateBack: () -> Unit,
-    onTrustCreated: () -> Unit,
+    onTrustCreated: (Trust) -> Unit,
     viewModel: TrustViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(state.isComplete) {
-        if (state.isComplete) onTrustCreated()
+        if (state.isComplete) {
+            // Pass the completed trust object to the navigation callback
+            onTrustCreated(
+                Trust(
+                    trustName = state.trustName,
+                    grantor = state.grantor,
+                    trustee = state.trustee,
+                    successorTrustee = state.successorTrustee,
+                    beneficiaries = state.beneficiaries,
+                    assets = state.assets,
+                    status = "draft"
+                )
+            )
+        }
     }
 
     Scaffold(

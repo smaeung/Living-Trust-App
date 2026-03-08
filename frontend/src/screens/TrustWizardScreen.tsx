@@ -16,6 +16,7 @@ interface TrustFormData {
   trustType: string;
   assets: string;
   notes: string;
+  state: string;
 }
 
 export default function TrustWizardScreen({ navigation }: TrustWizardScreenProps) {
@@ -29,6 +30,7 @@ export default function TrustWizardScreen({ navigation }: TrustWizardScreenProps
     trustType: 'revocable',
     assets: '',
     notes: '',
+    state: 'WA',
   });
 
   const totalSteps = 5;
@@ -57,21 +59,31 @@ export default function TrustWizardScreen({ navigation }: TrustWizardScreenProps
         `Are you sure you want to create "${formData.trustName}"?\n\nThis will generate your Living Trust document.`,
         [
           { text: 'Cancel', style: 'cancel' },
-          { 
-            text: '✅ Create Now', 
+          {
+            text: '✅ Preview & Download PDF',
             onPress: () => {
-              // Show success after creation
-              Alert.alert(
-                '✅ Success!',
-                `🎉 Your Living Trust "${formData.trustName}" has been created!\n\n📄 Document saved to Documents.\n🤖 AI will review it shortly.`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => navigation.navigate('Home'),
-                  },
-                ]
-              );
-            }
+              // Navigate to PDF preview / payment flow
+              navigation.navigate('PdfPreview', {
+                trustData: {
+                  trustName: formData.trustName,
+                  grantor: formData.grantorName,
+                  grantorAddress: formData.grantorAddress,
+                  trustee: formData.grantorName, // grantor acts as initial trustee
+                  successorTrustee: formData.successorTrustee,
+                  beneficiaries: formData.beneficiaries
+                    .split('\n')
+                    .map(b => b.trim())
+                    .filter(b => b.length > 0),
+                  assets: formData.assets
+                    .split('\n')
+                    .map(a => a.trim())
+                    .filter(a => a.length > 0),
+                  trustType: formData.trustType,
+                  state: formData.state,
+                  notes: formData.notes,
+                },
+              });
+            },
           },
         ]
       );
@@ -106,10 +118,20 @@ export default function TrustWizardScreen({ navigation }: TrustWizardScreenProps
     </View>
   );
 
+  const STATE_OPTIONS = [
+    { code: 'WA', name: 'Washington' }, { code: 'CA', name: 'California' },
+    { code: 'TX', name: 'Texas' }, { code: 'FL', name: 'Florida' },
+    { code: 'NY', name: 'New York' }, { code: 'IL', name: 'Illinois' },
+    { code: 'GA', name: 'Georgia' }, { code: 'PA', name: 'Pennsylvania' },
+    { code: 'OH', name: 'Ohio' }, { code: 'NC', name: 'North Carolina' },
+    { code: 'AZ', name: 'Arizona' }, { code: 'NV', name: 'Nevada' },
+    { code: 'OTHER', name: 'Other State (Uniform Trust Code)' },
+  ];
+
   const renderStep1 = () => (
     <View style={styles.stepContent}>
       <Text style={styles.stepTitle}>📋 Step 1: Basic Information</Text>
-      
+
       <Text style={styles.label}>Trust Name *</Text>
       <TextInput
         style={styles.input}
@@ -118,6 +140,27 @@ export default function TrustWizardScreen({ navigation }: TrustWizardScreenProps
         value={formData.trustName}
         onChangeText={(text) => updateField('trustName', text)}
       />
+
+      <Text style={styles.label}>State *</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
+        {STATE_OPTIONS.map(s => (
+          <TouchableOpacity
+            key={s.code}
+            style={[
+              styles.stateChip,
+              formData.state === s.code && styles.stateChipActive,
+            ]}
+            onPress={() => updateField('state', s.code)}
+          >
+            <Text style={[
+              styles.stateChipText,
+              formData.state === s.code && styles.stateChipTextActive,
+            ]}>
+              {s.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       <Text style={styles.label}>Trust Type *</Text>
       <View style={styles.radioGroup}>
@@ -437,5 +480,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  stateChip: {
+    backgroundColor: '#e2e8f0',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  stateChipActive: {
+    backgroundColor: '#1a365d',
+  },
+  stateChipText: {
+    fontSize: 13,
+    color: '#4a5568',
+    fontWeight: '500',
+  },
+  stateChipTextActive: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

@@ -11,6 +11,21 @@ import ReviewScreen from './src/screens/ReviewScreen';
 import AiAssistantScreen from './src/screens/AiAssistantScreen';
 import DocumentsScreen from './src/screens/DocumentsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import PdfPreviewScreen from './src/screens/PdfPreviewScreen';
+import PaymentScreen from './src/screens/PaymentScreen';
+
+export type TrustFormData = {
+  trustName: string;
+  grantor: string;
+  grantorAddress?: string;
+  trustee: string;
+  successorTrustee: string;
+  beneficiaries: string[];
+  assets: string[];
+  trustType?: string;
+  state?: string;
+  notes?: string;
+};
 
 export type RootStackParamList = {
   Home: undefined;
@@ -19,6 +34,8 @@ export type RootStackParamList = {
   AiAssistant: undefined;
   Documents: undefined;
   Settings: undefined;
+  PdfPreview: { trustData: TrustFormData };
+  Payment: { trustData: TrustFormData; amount: number; displayPrice: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -39,35 +56,45 @@ export default function App() {
             },
           }}
         >
-          <Stack.Screen 
-            name="Home" 
+          <Stack.Screen
+            name="Home"
             component={HomeScreen}
             options={{ title: 'Living Trust App' }}
           />
-          <Stack.Screen 
-            name="TrustWizard" 
+          <Stack.Screen
+            name="TrustWizard"
             component={TrustWizardScreen}
             options={{ title: 'Create Trust' }}
           />
-          <Stack.Screen 
-            name="Review" 
+          <Stack.Screen
+            name="Review"
             component={ReviewScreen}
             options={{ title: 'Review Document' }}
           />
-          <Stack.Screen 
-            name="AiAssistant" 
+          <Stack.Screen
+            name="AiAssistant"
             component={AiAssistantScreen}
             options={{ title: 'AI Lawyer Assistant' }}
           />
-          <Stack.Screen 
-            name="Documents" 
+          <Stack.Screen
+            name="Documents"
             component={DocumentsScreen}
             options={{ title: 'My Documents' }}
           />
-          <Stack.Screen 
-            name="Settings" 
+          <Stack.Screen
+            name="Settings"
             component={SettingsScreen}
             options={{ title: 'Settings' }}
+          />
+          <Stack.Screen
+            name="PdfPreview"
+            component={PdfPreviewScreen}
+            options={{ title: 'Document Preview' }}
+          />
+          <Stack.Screen
+            name="Payment"
+            component={PaymentScreen}
+            options={{ title: 'Secure Payment', headerBackTitle: 'Preview' }}
           />
         </Stack.Navigator>
       </NavigationContainer>
