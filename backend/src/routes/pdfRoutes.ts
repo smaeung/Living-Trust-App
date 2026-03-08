@@ -1,12 +1,9 @@
 import { Router, Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
-import crypto from 'crypto';
 import { getTemplate, TrustData, TrustDocumentContent, ALL_STATES } from '../templates/livingTrustTemplates';
+import { downloadTokens, issueDownloadToken } from '../tokenStore';
 
 const router = Router();
-
-// In-memory store for download tokens (replace with Redis/DB in production)
-const downloadTokens = new Map<string, { trustData: TrustData; expiresAt: number }>();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PDF BUILDER — shared logic for watermarked and clean PDFs
@@ -277,15 +274,12 @@ router.post('/issue-download-token', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'trustData and paymentIntentId required' });
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-
-    downloadTokens.set(token, { trustData, expiresAt });
+    const { downloadToken, expiresAt } = issueDownloadToken(trustData, paymentIntentId);
 
     res.json({
       success: true,
-      downloadToken: token,
-      expiresAt: new Date(expiresAt).toISOString(),
+      downloadToken,
+      expiresAt,
       message: 'Token valid for 24 hours. Use GET /api/pdf/download/:token to download.',
     });
   } catch (err: any) {

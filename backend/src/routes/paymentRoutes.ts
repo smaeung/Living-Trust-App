@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import Stripe from 'stripe';
+import { issueDownloadToken } from '../tokenStore';
 
 const router = Router();
 
@@ -107,7 +108,7 @@ router.post('/confirm', async (req: Request, res: Response) => {
     if (paymentIntentId.startsWith('pi_mock_') && !stripeClient) {
       console.warn('[PAYMENTS] Accepting mock PaymentIntent for development.');
       // Issue download token via internal call
-      const tokenResponse = await issueToken(trustData, paymentIntentId);
+      const tokenResponse = issueToken(trustData, paymentIntentId);
       return res.json(tokenResponse);
     }
 
@@ -131,7 +132,7 @@ router.post('/confirm', async (req: Request, res: Response) => {
       console.warn(`[PAYMENTS] Amount mismatch: expected ${TRUST_DOCUMENT_PRICE_CENTS}, got ${paymentIntent.amount}`);
     }
 
-    const tokenResponse = await issueToken(trustData, paymentIntentId);
+    const tokenResponse = issueToken(trustData, paymentIntentId);
     res.json(tokenResponse);
   } catch (err: any) {
     console.error('[PAYMENTS] confirm error:', err);
@@ -223,34 +224,14 @@ router.get('/status/:paymentIntentId', async (req: Request, res: Response) => {
 // INTERNAL HELPER
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function issueToken(trustData: any, paymentIntentId: string) {
-  // Internal HTTP call to PDF route to issue a download token
-  const crypto = await import('crypto');
-  const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-
-  // Re-use the downloadTokens map from pdfRoutes
-  // In production, store in database. Here we use a module-level approach.
-  // We call the internal API endpoint instead.
-  const BASE_URL = `http://localhost:${process.env.PORT || 3001}`;
-
-  const response = await fetch(`${BASE_URL}/api/pdf/issue-download-token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ trustData, paymentIntentId }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to issue download token');
-  }
-
-  const data = await response.json() as any;
+function issueToken(trustData: any, paymentIntentId: string) {
+  const { downloadToken, expiresAt } = issueDownloadToken(trustData, paymentIntentId);
   return {
     success: true,
-    downloadToken: data.downloadToken,
-    expiresAt: data.expiresAt,
-    downloadUrl: `/api/pdf/download/${data.downloadToken}`,
-    downloadUrlBase64: `/api/pdf/download-base64/${data.downloadToken}`,
+    downloadToken,
+    expiresAt,
+    downloadUrl: `/api/pdf/download/${downloadToken}`,
+    downloadUrlBase64: `/api/pdf/download-base64/${downloadToken}`,
     message: 'Payment confirmed! Your document is ready to download.',
     paymentIntentId,
   };
