@@ -8,18 +8,13 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
-  Platform,
   Linking,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
 import { RootStackParamList } from '../../App';
-
-const API_BASE = Platform.select({
-  android: 'http://10.0.2.2:3001',
-  default: 'http://localhost:3001',
-});
+import { API_BASE } from '../config';
 
 type PaymentScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Payment'>;

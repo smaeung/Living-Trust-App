@@ -1,8 +1,11 @@
+import dotenv from 'dotenv';
+// Load .env FIRST — before any module that reads process.env at import time
+dotenv.config();
+
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 
 // Routes
 import authRoutes from './routes/authRoutes';
@@ -12,8 +15,6 @@ import aiRoutes from './routes/aiRoutes';
 import userRoutes from './routes/userRoutes';
 import pdfRoutes from './routes/pdfRoutes';
 import paymentRoutes from './routes/paymentRoutes';
-
-dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 3001;

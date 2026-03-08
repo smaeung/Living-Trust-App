@@ -35,3 +35,6 @@ coverage/
 
 # Production
 production/
+
+# Generated sample PDFs (artifacts — regenerate with: node generate-sample-pdfs.js)
+sample-pdfs/

@@ -4,6 +4,11 @@ import bcrypt from 'bcryptjs';
 
 const router = Router();
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required but not set');
+}
+
 // Mock user database (replace with real DB)
 const users: any[] = [];
 
@@ -34,10 +39,10 @@ router.post('/register', async (req: Request, res: Response) => {
     // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'secret-key',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
-    
+
     res.status(201).json({
       message: 'User created successfully',
       token,
@@ -67,10 +72,10 @@ router.post('/login', async (req: Request, res: Response) => {
     // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'secret-key',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
-    
+
     res.json({
       message: 'Login successful',
       token,
@@ -90,7 +95,7 @@ router.get('/me', (req: Request, res: Response) => {
   
   try {
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret-key') as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
     const user = users.find(u => u.id === decoded.userId);
     
     if (!user) {
